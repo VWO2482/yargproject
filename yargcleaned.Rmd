@@ -1,0 +1,85 @@
+---
+title: "R Yarg"
+author: "vinny"
+date: "2024-12-07"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+```
+```{r}
+yarg = read.csv("extrasongs.csv")
+clean = read.csv ("yargdated.csv")
+official = read.csv("yargofficial.csv")
+```
+```{r}
+## There are seven main variables with each song added to this game. A song's name, artist, album, genre, year released, the people who charted it for the game, and its length in milliseconds. Only the songlength variable is numerical, the rest are categorical. There are some duplicates with varying information displayed due to me downloading different versions of songs, sometimes many at a time. 
+# "clean" shows songs charted from 1806 to 2024, with dates simplified to their years
+# "official" shows only songs charted by Harmonix(Guitar hero 1 and 2, Rock band 1-4), Harmonix and Rhythm Authors (Rock band 4 DLC), and Neversoft (Other guitar hero games). These charters outnumber the other ones in song count and typically show higher quality and more instruments supported.
+summary(yarg)
+```
+
+```{r}
+head(yarg)
+##head () brings the first songs by year. These first charts in head()yarg were removed for our clean data.
+```
+```{r}
+head(clean) ## our clean data prioritizes artists alphabetically, the same way the csv was saved. 
+```
+```{r}
+head(official)
+## harmonix charts are listed first, followed by artist in "clean"
+```
+
+```{r}
+hist(log(clean$songlength))
+## song length is the only numerical variable in this file, so naturally it could be well-represented in a histogram. Using log means outliers will be on the sides of this chart as opposed to skewing right. 
+```
+
+
+```{r}
+hist(log(official$songlength))
+# official sons have a far more even distribution due to the lack of very long outliers
+```
+
+```{r}
+dim(yarg)
+dim (clean)
+dim (official)
+## there are 6810 songs with 7 variables
+## cleanliness- many songs were downloaded but were not read in-game. some of this data may be N/A but none of them made it to the csv file. Not every song had its charter listed when adding it in-game, and YARG accounts for this listing them as "unknown charter". Clean and Official fix this, and thusly show fewer results
+```
+```{r}
+## discussion- This data features many bands comprised of various names, some of which have unique letters. Motorhead is written as MotÃ¶rhead, probably due to how the game reads and processes special cahracters.Alphabetically,some numbers came first, then ",(,*,., and [ come before 0, followed by numbers and letters after. I do not know the logic used for these, but is seems there could be hidden variables not shown in the csv file, as listing songs alphabetically places "+44" before ""weird al yankovic"", and does not show the + in the csv file. (+44 is displayed correctly in game, and alpabetcally alfter "weird al yankovic" in game).
+## Some categories, such as genre, show inconsistent capitalization. For genre, Neversoft consistently capitalizes genre name, but harmonix is inconsistent. When working with rhythm athors, it isn't capitalized.Same goes for hyphenating pop-rock, This may be the source i downloaded them from, converting songs from newer games in a different format. sometimes the year is listed as unknown, and some have errors or more precise dates. notably, the beatles' "Rubber soul" and "Lonely Hearts club band" albumns have thier exact date listed. It is always harmonix which lists exact dates.
+```
+```{r}
+official%>%
+ ggplot(mapping = aes(x= songlength, y = Year , color = Charter, size = songlength))+
+
+geom_point()
+
+```
+```{r}
+clean%>%
+ ggplot(mapping = aes(x= songlength, y = Year, size = songlength))+
+
+geom_point()
+# the few oitliers in classical music massively skew the data, but it its clear the closer i am to 2000, the more music there is. movie length charts came from the early 2010s.
+```
+## notes 
+##Charters- The authors “Harmonix”, “Harmonix, Rhythm Authors”, and “Neversoft”
+##Harmonix contributed the most to the songs added to this list, as they created the charts for the first two Guitar Hero Games and Rock band 1-4. For Rock Band 4’s DLC, they collaborated with Rhythm Authors to create our second largest group of songs. This is significant because they continued making music for eight years, skewing our data to include many songs from 2015-2024. Neversoft charted the rest of Guitar Hero’s charts from 2007 to 2011, resulting in a much smaller song list compared to Harmonix.  Another large portion of the results here come from unknown charters, Many of which are for custom songs or Rock Band Network ( Lesser known artists in official games)
+##Data source: Yet Another Rhythm Game song exports
+##YARC launcher -> Launch stable -> Settings ->  All settings -> File Management -> Export Song list (plain text) 
+##This data was exported in a txt file and converted to a csv for use in r. 
+##The initial data was not clean enough, as some songs’ “year” data contained characters and not years. Songs with exact dates listed were simplified to their year and songs without a release year were erased. To keep this concise, the data now contains music from 1806 to 2024. 
+
+
